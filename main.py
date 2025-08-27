@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 import argparse
+import collections
+import csv
+import io
 import typing
 
 import tkinter
@@ -26,6 +29,10 @@ def change_text_size(val: int, relative: bool = True) -> ...:
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', '--dict_file', required=True, type=argparse.FileType('rb'), help='path to the dictionary file to use')
 args = ap.parse_args()
+
+reverse_lookup_table: collections.defaultdict[str, set[str]] = collections.defaultdict(set)
+for nom_representation, standard_representation in csv.reader(io.TextIOWrapper(getattr(args, 'dict_file'), newline='', encoding='utf-8'), dialect=csv.excel_tab):
+  reverse_lookup_table[standard_representation].add(nom_representation)
 
 (root := tkinter.Tk()).title('Nôm Keyboard')
 
