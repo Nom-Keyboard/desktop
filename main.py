@@ -9,6 +9,8 @@ import tkinter
 import tkinter.scrolledtext
 import tkinter.font
 
+import nomkb_alpha
+
 TK_OVERRIDE_OLD_BEHAVIOR = 'break'
 TK_TEXT_START = '1.0'
 
@@ -32,7 +34,7 @@ args = ap.parse_args()
 
 reverse_lookup_table: collections.defaultdict[str, set[str]] = collections.defaultdict(set)
 for nom_representation, standard_representation in csv.reader(io.TextIOWrapper(getattr(args, 'dict_file'), newline='', encoding='utf-8'), dialect=csv.excel_tab):
-  reverse_lookup_table[standard_representation].add(nom_representation)
+  reverse_lookup_table[nomkb_alpha.normalize(standard_representation)].add(nom_representation)
 
 (root := tkinter.Tk()).title('Nôm Keyboard')
 
