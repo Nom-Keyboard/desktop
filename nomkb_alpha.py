@@ -11,6 +11,8 @@ for _a, _b in ((('àáạảã', 'ăằắặẳẵ', 'âầấậẩẫ'), 'a')
     for _f in (lambda s: s, lambda s: s.upper()):
       _map.update(dict.fromkeys(_f(_x), _f(_b)))
 
+del _a, _b, _x, _f
+
 _tl = str.maketrans(_map)
 del _map
 
