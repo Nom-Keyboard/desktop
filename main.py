@@ -24,7 +24,8 @@ def select_all_text(event: typing.Optional[tkinter.Event] = None) -> str:
 
 def change_text_size(val: int, relative: bool = True) -> ...:
   def inner(event: typing.Optional[tkinter.Event] = None) -> str:
-    text_font.config(size=(text_font.cget('size') if relative else 0) + val)
+    if (new_size := (text_font.cget('size') if relative else 0) + val) > 0:
+      text_font.config(size=new_size)
     return TK_OVERRIDE_OLD_BEHAVIOR
   return inner
 
