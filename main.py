@@ -39,11 +39,13 @@ for nom_representation, standard_representation in csv.reader(io.TextIOWrapper(g
 
 (root := tkinter.Tk()).title('Nôm Keyboard')
 
-(text_area := tkinter.scrolledtext.ScrolledText(font=(text_font := tkinter.font.Font(family='Nom Na Tong', size=24)), undo=True)).pack(expand=True, fill=tkinter.BOTH)
+(text_font := tkinter.font.Font(family='Nom Na Tong')).config(size=(default_font_size := text_font.actual()['size']))
+
+(text_area := tkinter.scrolledtext.ScrolledText(font=text_font, undo=True)).pack(expand=True, fill=tkinter.BOTH)
 text_area.bind('<Control-a>', select_all_text)
 text_area.bind('<Control-equal>', change_text_size(2))
 text_area.bind('<Control-minus>', change_text_size(-2))
-text_area.bind('<Control-0>', change_text_size(text_font.cget('size'), relative=False))
+text_area.bind('<Control-0>', change_text_size(default_font_size, relative=False))
 text_area.focus_set()
 
 # make window size explicit
