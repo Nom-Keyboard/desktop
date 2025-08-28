@@ -50,4 +50,7 @@ text_area.focus_set()
 root.update()
 root.geometry(f'{root.winfo_width()}x{root.winfo_height()}')
 
+# allow widget to auto-shrink
+text_area.config(width=0, height=0)
+
 tkinter.mainloop()
