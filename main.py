@@ -10,6 +10,7 @@ import tkinter.scrolledtext
 import tkinter.font
 
 import nomkb_alpha
+import nomkb_appres
 
 TK_OVERRIDE_OLD_BEHAVIOR = 'break'
 TK_TEXT_START = '1.0'
@@ -38,6 +39,7 @@ for nom_representation, standard_representation in csv.reader(io.TextIOWrapper(g
   reverse_lookup_table[nomkb_alpha.normalize(standard_representation)].add(nom_representation)
 
 (root := tkinter.Tk()).title('Nôm Keyboard')
+root.iconphoto(True, tkinter.PhotoImage(data=nomkb_appres.ICON_DATA))
 
 (text_font := tkinter.font.Font(family='Nom Na Tong')).config(size=(default_font_size := text_font.actual()['size']))
 
