@@ -77,26 +77,26 @@ def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
   if has_buffer and event.keysym == TK_KEY_ENTER:
     try_select_completion(0)
     return TK_OVERRIDE_OLD_BEHAVIOR
-  elif has_buffer and event.keysym == TK_KEY_SPACE:
+  if has_buffer and event.keysym == TK_KEY_SPACE:
     add_to_buffer_no_repeat(' ', extra_blacklist='-')
     return TK_OVERRIDE_OLD_BEHAVIOR
-  elif has_buffer and event.keysym == TK_KEY_BACKSPACE:
+  if has_buffer and event.keysym == TK_KEY_BACKSPACE:
     with buffer_display_helper:
       buffer_display.delete(buffer_size - 1, tkinter.END)
     buffer_size -= 1
     update_completion_list()
     return TK_OVERRIDE_OLD_BEHAVIOR
-  elif has_buffer and event.keysym == TK_KEY_ESC:
+  if has_buffer and event.keysym == TK_KEY_ESC:
     cleanup()
     return TK_OVERRIDE_OLD_BEHAVIOR
-  elif has_buffer and event.keysym == TK_KEY_HYPHEN:
+  if has_buffer and event.keysym == TK_KEY_HYPHEN:
     add_to_buffer_no_repeat('-', extra_blacklist=' ')
     return TK_OVERRIDE_OLD_BEHAVIOR
-  elif len(event.keysym) == 1:
+  if len(event.keysym) == 1:
     if event.keysym in string.ascii_letters:
       add_to_buffer(event.keysym)
       return TK_OVERRIDE_OLD_BEHAVIOR
-    elif has_buffer and event.keysym != TK_KEY_0 and event.keysym in string.digits:
+    if has_buffer and event.keysym != TK_KEY_0 and event.keysym in string.digits:
       try_select_completion(int(event.keysym) - 1)
       return TK_OVERRIDE_OLD_BEHAVIOR
 
