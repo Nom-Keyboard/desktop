@@ -79,7 +79,6 @@ def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
     return TK_OVERRIDE_OLD_BEHAVIOR
   elif has_buffer and event.keysym == TK_KEY_SPACE:
     add_to_buffer_no_repeat(' ', extra_blacklist='-')
-    update_completion_list()
     return TK_OVERRIDE_OLD_BEHAVIOR
   elif has_buffer and event.keysym == TK_KEY_BACKSPACE:
     with buffer_display_helper:
@@ -92,12 +91,10 @@ def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
     return TK_OVERRIDE_OLD_BEHAVIOR
   elif has_buffer and event.keysym == TK_KEY_HYPHEN:
     add_to_buffer_no_repeat('-', extra_blacklist=' ')
-    update_completion_list()
     return TK_OVERRIDE_OLD_BEHAVIOR
   elif len(event.keysym) == 1:
     if event.keysym in string.ascii_letters:
       add_to_buffer(event.keysym)
-      update_completion_list()
       return TK_OVERRIDE_OLD_BEHAVIOR
     elif has_buffer and event.keysym != TK_KEY_0 and event.keysym in string.digits:
       try_select_completion(int(event.keysym) - 1)
@@ -134,6 +131,7 @@ def add_to_buffer(s: str):
   with buffer_display_helper:
     buffer_display.insert(tkinter.END, s)
   buffer_size += 1
+  update_completion_list()
 
 def update_completion_list():
   res = reverse_lookup_table.get(buffer_display.get(), None)
