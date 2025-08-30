@@ -19,7 +19,7 @@ import nomkb_ui_tk
 TK_OVERRIDE_OLD_BEHAVIOR = 'break'
 TK_TEXT_START = '1.0'
 
-def select_all_text(event: typing.Optional[tkinter.Event] = None) -> str:
+def select_all_text(event: typing.Optional[tkinter.Event] = None) -> typing.Optional[str]:
   text_area.tag_add(tkinter.SEL, TK_TEXT_START, tkinter.END)
   # move cursor to beginning and go to it
   text_area.mark_set(tkinter.INSERT, TK_TEXT_START)
@@ -28,7 +28,7 @@ def select_all_text(event: typing.Optional[tkinter.Event] = None) -> str:
   return TK_OVERRIDE_OLD_BEHAVIOR
 
 def change_text_size(val: int, relative: bool = True) -> ...:
-  def inner(event: typing.Optional[tkinter.Event] = None) -> str:
+  def inner(event: typing.Optional[tkinter.Event] = None) -> typing.Optional[str]:
     if (new_size := (text_font.cget('size') if relative else 0) + val) > 0:
       text_font.config(size=new_size)
     return TK_OVERRIDE_OLD_BEHAVIOR
