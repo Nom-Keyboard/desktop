@@ -4,6 +4,7 @@ import collections
 import csv
 import dataclasses
 import io
+import string
 import sys
 import traceback
 import typing
@@ -21,6 +22,11 @@ TK_COLOR_GREEN = 'green'
 TK_COLOR_RED = 'red'
 TK_CURSOR_ARROW = 'arrow'
 TK_CURSOR_HAND = 'hand2'
+TK_KEY_0 = '0'
+TK_KEY_BACKSPACE = 'BackSpace'
+TK_KEY_ENTER = 'Return'
+TK_KEY_ESC = 'Escape'
+TK_KEY_SPACE = 'space'
 TK_OVERRIDE_OLD_BEHAVIOR = 'break'
 TK_TEXT_START = '1.0'
 
@@ -60,6 +66,34 @@ def toggle_kb(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
   status_label.config(text=f'Keyboard {pretty}', fg=color)
   return TK_OVERRIDE_OLD_BEHAVIOR
 
+def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
+  if not kb_enabled or event is None or event.type != tkinter.EventType.KeyPress:
+    return
+
+  has_buffer = buffer_size > 0
+  if has_buffer and event.keysym == TK_KEY_ENTER:
+    pass
+  elif has_buffer and event.keysym == TK_KEY_SPACE:
+    pass
+  elif has_buffer and event.keysym == TK_KEY_BACKSPACE:
+    pass
+  elif has_buffer and event.keysym == TK_KEY_ESC:
+    pass
+  elif len(event.keysym) == 1:
+    if event.keysym in string.ascii_letters:
+      pass
+    elif has_buffer and event.keysym != TK_KEY_0 and event.keysym in string.digits:
+      pass
+
+def change_completion_page(direction: int) -> ...:
+  def inner(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
+    if (page_count := list_view.get_page_count()) < 1:
+      return
+    if (new_idx := list_view.get_page_idx() + direction) < 0 or not new_idx < page_count:
+      return
+    list_view.set_page_idx(new_idx)
+  return inner
+
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', '--dict_file', required=True, type=argparse.FileType('rb'), help='path to the dictionary file to use')
 args = ap.parse_args()
@@ -82,10 +116,13 @@ status_label.bind('<Button-1>', toggle_kb)
 (text_font := tkinter.font.Font(family='Nom Na Tong')).config(size=(default_font_size := text_font.actual()['size']))
 
 (text_area := tkinter.scrolledtext.ScrolledText(font=text_font, undo=True)).pack(expand=True, fill=tkinter.BOTH)
+text_area.bind('<Key>', on_key)
 text_area.bind('<Control-a>', select_all_text)
 text_area.bind('<Control-equal>', change_text_size(2))
 text_area.bind('<Control-minus>', change_text_size(-2))
 text_area.bind('<Control-0>', change_text_size(default_font_size, relative=False))
+text_area.bind('<Control-Page_Up>', change_completion_page(-1))
+text_area.bind('<Control-Page_Down>', change_completion_page(1))
 text_area.focus_set()
 
 (buffer_display := tkinter.Entry(state=tkinter.DISABLED, cursor=TK_CURSOR_ARROW)).pack(fill=tkinter.X)
@@ -104,5 +141,7 @@ root.minsize(root.winfo_width(), root.winfo_height())
 
 kb_enabled = False
 toggle_kb(None)
+
+buffer_size = 0
 
 tkinter.mainloop()

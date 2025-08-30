@@ -10,3 +10,8 @@ python tk_app_main.py --help
 | Zoom In    | <kbd>Ctrl</kbd> + <kbd>=</kbd> |
 | Zoom Out   | <kbd>Ctrl</kbd> + <kbd>-</kbd> |
 | Reset Zoom | <kbd>Ctrl</kbd> + <kbd>0</kbd> |
+| Completions: Previous Page | <kbd>Ctrl</kbd> + <kbd>PgUp</kbd> |
+| Completions: Next Page     | <kbd>Ctrl</kbd> + <kbd>PgDn</kbd> |
+| First Completion           | <kbd>Enter</kbd>                  |
+| Complete Word              | <kbd>1</kbd> ~ <kbd>9</kbd>       |
+| Clear Query                | <kbd>Esc</kbd>                    |
