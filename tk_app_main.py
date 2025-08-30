@@ -26,6 +26,7 @@ TK_KEY_0 = '0'
 TK_KEY_BACKSPACE = 'BackSpace'
 TK_KEY_ENTER = 'Return'
 TK_KEY_ESC = 'Escape'
+TK_KEY_HYPHEN = 'minus'
 TK_KEY_SPACE = 'space'
 TK_OVERRIDE_OLD_BEHAVIOR = 'break'
 TK_TEXT_START = '1.0'
@@ -77,9 +78,8 @@ def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
     try_select_completion(0)
     return TK_OVERRIDE_OLD_BEHAVIOR
   elif has_buffer and event.keysym == TK_KEY_SPACE:
-    if not buffer_display.get()[-1] == ' ':
-      add_to_buffer(' ')
-      update_completion_list()
+    add_to_buffer_no_repeat(' ', extra_blacklist='-')
+    update_completion_list()
     return TK_OVERRIDE_OLD_BEHAVIOR
   elif has_buffer and event.keysym == TK_KEY_BACKSPACE:
     with buffer_display_helper:
@@ -89,6 +89,10 @@ def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
     return TK_OVERRIDE_OLD_BEHAVIOR
   elif has_buffer and event.keysym == TK_KEY_ESC:
     cleanup()
+    return TK_OVERRIDE_OLD_BEHAVIOR
+  elif has_buffer and event.keysym == TK_KEY_HYPHEN:
+    add_to_buffer_no_repeat('-', extra_blacklist=' ')
+    update_completion_list()
     return TK_OVERRIDE_OLD_BEHAVIOR
   elif len(event.keysym) == 1:
     if event.keysym in string.ascii_letters:
@@ -137,6 +141,10 @@ def update_completion_list():
     list_view.clear()
   else:
     list_view.set_data(list(res))
+
+def add_to_buffer_no_repeat(s: str, extra_blacklist: str = ''):
+  if not (last_char := buffer_display.get()[-1]) == s and last_char not in extra_blacklist:
+    add_to_buffer(s)
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', '--dict_file', required=True, type=argparse.FileType('rb'), help='path to the dictionary file to use')
