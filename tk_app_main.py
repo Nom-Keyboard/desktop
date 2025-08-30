@@ -67,23 +67,37 @@ def toggle_kb(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
   return TK_OVERRIDE_OLD_BEHAVIOR
 
 def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
+  global buffer_size
+
   if not kb_enabled or event is None or event.type != tkinter.EventType.KeyPress:
     return
 
   has_buffer = buffer_size > 0
   if has_buffer and event.keysym == TK_KEY_ENTER:
-    pass
+    try_select_completion(0)
+    return TK_OVERRIDE_OLD_BEHAVIOR
   elif has_buffer and event.keysym == TK_KEY_SPACE:
-    pass
+    if not buffer_display.get()[-1] == ' ':
+      add_to_buffer(' ')
+      update_completion_list()
+    return TK_OVERRIDE_OLD_BEHAVIOR
   elif has_buffer and event.keysym == TK_KEY_BACKSPACE:
-    pass
+    with buffer_display_helper:
+      buffer_display.delete(buffer_size - 1, tkinter.END)
+    buffer_size -= 1
+    update_completion_list()
+    return TK_OVERRIDE_OLD_BEHAVIOR
   elif has_buffer and event.keysym == TK_KEY_ESC:
-    pass
+    cleanup()
+    return TK_OVERRIDE_OLD_BEHAVIOR
   elif len(event.keysym) == 1:
     if event.keysym in string.ascii_letters:
-      pass
+      add_to_buffer(event.keysym)
+      update_completion_list()
+      return TK_OVERRIDE_OLD_BEHAVIOR
     elif has_buffer and event.keysym != TK_KEY_0 and event.keysym in string.digits:
-      pass
+      try_select_completion(int(event.keysym) - 1)
+      return TK_OVERRIDE_OLD_BEHAVIOR
 
 def change_completion_page(direction: int) -> ...:
   def inner(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
@@ -93,6 +107,36 @@ def change_completion_page(direction: int) -> ...:
       return
     list_view.set_page_idx(new_idx)
   return inner
+
+def try_select_completion(idx: int):
+  if list_view.get_page_count() < 1:
+    return
+  try:
+    word: Word = list_view.get_item_in_page(idx)
+  except IndexError:
+    return
+  text_area.insert(tkinter.INSERT, word.nom_representation)
+  cleanup()
+
+def cleanup():
+  global buffer_size
+  with buffer_display_helper:
+    buffer_display.delete(0, tkinter.END)
+  buffer_size = 0
+  list_view.clear()
+
+def add_to_buffer(s: str):
+  global buffer_size
+  with buffer_display_helper:
+    buffer_display.insert(tkinter.END, s)
+  buffer_size += 1
+
+def update_completion_list():
+  res = reverse_lookup_table.get(buffer_display.get(), None)
+  if res is None:
+    list_view.clear()
+  else:
+    list_view.set_data(list(res))
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', '--dict_file', required=True, type=argparse.FileType('rb'), help='path to the dictionary file to use')
@@ -127,6 +171,7 @@ text_area.bind('<Control-Page_Down>', change_completion_page(1))
 text_area.focus_set()
 
 (buffer_display := tkinter.Entry(state=tkinter.DISABLED, cursor=TK_CURSOR_ARROW)).pack(fill=tkinter.X)
+buffer_display_helper = nomkb_ui_tk.TkReadOnlyWidgetModifyHelper(buffer_display)
 
 (list_view := nomkb_ui_tk.PagedListTk(root, 9)).tk_container.pack(fill=tkinter.X)
 list_view.tk_listbox.config(font=text_font)
