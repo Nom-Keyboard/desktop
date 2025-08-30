@@ -16,6 +16,8 @@ import nomkb_appres
 import nomkb_dict
 import nomkb_ui_tk
 
+TK_COLOR_GREEN = 'green'
+TK_COLOR_RED = 'red'
 TK_OVERRIDE_OLD_BEHAVIOR = 'break'
 TK_TEXT_START = '1.0'
 
@@ -34,6 +36,19 @@ def change_text_size(val: int, relative: bool = True) -> ...:
     return TK_OVERRIDE_OLD_BEHAVIOR
   return inner
 
+def toggle_kb(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
+  global kb_enabled
+
+  if kb_enabled := not kb_enabled:
+    pretty = 'On'
+    color = TK_COLOR_GREEN
+  else:
+    pretty = 'Off'
+    color = TK_COLOR_RED
+
+  status_label.config(text=f'Keyboard {pretty}', fg=color)
+  return TK_OVERRIDE_OLD_BEHAVIOR
+
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', '--dict_file', required=True, type=argparse.FileType('rb'), help='path to the dictionary file to use')
 args = ap.parse_args()
@@ -51,6 +66,7 @@ except (csv.Error, UnicodeDecodeError, ValueError) as exc:
 root.iconphoto(True, tkinter.PhotoImage(data=nomkb_appres.ICON_DATA))
 
 (status_label := tkinter.Label()).pack(fill=tkinter.X)
+status_label.bind('<Button-1>', toggle_kb)
 
 (text_font := tkinter.font.Font(family='Nom Na Tong')).config(size=(default_font_size := text_font.actual()['size']))
 
@@ -74,5 +90,8 @@ root.geometry(f'{root.winfo_width()}x{root.winfo_height()}')
 text_area.config(width=0, height=0)
 
 root.minsize(root.winfo_width(), root.winfo_height())
+
+kb_enabled = False
+toggle_kb(None)
 
 tkinter.mainloop()
