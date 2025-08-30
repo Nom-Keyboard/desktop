@@ -15,3 +15,4 @@ python tk_app_main.py --help
 | First Completion           | <kbd>Enter</kbd>                  |
 | Complete Word              | <kbd>1</kbd> ~ <kbd>9</kbd>       |
 | Clear Query                | <kbd>Esc</kbd>                    |
+| Toggle Keyboard On/Off | <kbd>Tab</kbd> |

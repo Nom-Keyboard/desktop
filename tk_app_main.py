@@ -116,6 +116,7 @@ status_label.bind('<Button-1>', toggle_kb)
 (text_font := tkinter.font.Font(family='Nom Na Tong')).config(size=(default_font_size := text_font.actual()['size']))
 
 (text_area := tkinter.scrolledtext.ScrolledText(font=text_font, undo=True)).pack(expand=True, fill=tkinter.BOTH)
+text_area.bind('<Tab>', toggle_kb)
 text_area.bind('<Key>', on_key)
 text_area.bind('<Control-a>', select_all_text)
 text_area.bind('<Control-equal>', change_text_size(2))
