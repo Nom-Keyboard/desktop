@@ -3,6 +3,8 @@ import argparse
 import collections
 import csv
 import io
+import sys
+import traceback
 import typing
 
 import tkinter
@@ -11,6 +13,7 @@ import tkinter.font
 
 import nomkb_alpha
 import nomkb_appres
+import nomkb_dict
 
 TK_OVERRIDE_OLD_BEHAVIOR = 'break'
 TK_TEXT_START = '1.0'
@@ -35,8 +38,13 @@ ap.add_argument('-d', '--dict_file', required=True, type=argparse.FileType('rb')
 args = ap.parse_args()
 
 reverse_lookup_table: collections.defaultdict[str, set[str]] = collections.defaultdict(set)
-for nom_representation, standard_representation in csv.reader(io.TextIOWrapper(getattr(args, 'dict_file'), newline='', encoding='utf-8'), dialect=csv.excel_tab):
-  reverse_lookup_table[nomkb_alpha.normalize(standard_representation)].add(nom_representation)
+try:
+  for nom_representation, standard_representation in csv.reader(io.TextIOWrapper(getattr(args, 'dict_file'), newline='', encoding='utf-8'), dialect=nomkb_dict.excel_tab_strict):
+    reverse_lookup_table[nomkb_alpha.normalize(standard_representation)].add(nom_representation)
+except (csv.Error, UnicodeDecodeError, ValueError) as exc:
+  traceback.print_exception(exc)
+  print('Error parsing dictionary file, Bailing out.', file=sys.stderr)
+  sys.exit(1)
 
 (root := tkinter.Tk()).title('Nôm Keyboard')
 root.iconphoto(True, tkinter.PhotoImage(data=nomkb_appres.ICON_DATA))
