@@ -145,6 +145,22 @@ def add_to_buffer_no_repeat(s: str, extra_blacklist: str = ''):
   if not (last_char := buffer_display.get()[-1]) == s and last_char not in extra_blacklist:
     add_to_buffer(s)
 
+def handle_punc(s: str) -> ...:
+  def inner(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
+    if not kb_enabled:
+      return
+    text_area.insert(tkinter.INSERT, s)
+    return TK_OVERRIDE_OLD_BEHAVIOR
+  return inner
+
+def handle_quotes(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
+  global in_quote
+  if not kb_enabled:
+    return
+  text_area.insert(tkinter.INSERT, '”' if in_quote else '“')
+  in_quote = not in_quote
+  return TK_OVERRIDE_OLD_BEHAVIOR
+
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', '--dict_file', required=True, type=argparse.FileType('rb'), help='path to the dictionary file to use')
 args = ap.parse_args()
@@ -167,6 +183,15 @@ status_label.bind('<Button-1>', toggle_kb)
 (text_font := tkinter.font.Font(family='Nom Na Tong')).config(size=(default_font_size := text_font.actual()['size']))
 
 (text_area := tkinter.scrolledtext.ScrolledText(font=text_font, undo=True)).pack(expand=True, fill=tkinter.BOTH)
+text_area.bind('<comma>', handle_punc('，'))
+text_area.bind('<period>', handle_punc('。'))
+text_area.bind('<question>', handle_punc('？'))
+text_area.bind('<exclam>', handle_punc('！'))
+text_area.bind('<parenleft>', handle_punc('（'))
+text_area.bind('<parenright>', handle_punc('）'))
+text_area.bind('<colon>', handle_punc('：'))
+text_area.bind('<semicolon>', handle_punc('；'))
+text_area.bind('<quotedbl>', handle_quotes)
 text_area.bind('<Tab>', toggle_kb)
 text_area.bind('<Key>', on_key)
 text_area.bind('<Control-a>', select_all_text)
@@ -196,5 +221,6 @@ kb_enabled = False
 toggle_kb(None)
 
 buffer_size = 0
+in_quote = False
 
 tkinter.mainloop()
