@@ -77,8 +77,11 @@ def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
   if has_buffer and event.keysym == TK_KEY_ENTER:
     try_select_completion(0)
     return TK_OVERRIDE_OLD_BEHAVIOR
-  if has_buffer and event.keysym == TK_KEY_SPACE:
-    add_to_buffer_no_repeat(' ', extra_blacklist='-')
+  if event.keysym == TK_KEY_SPACE:
+    if has_buffer:
+      add_to_buffer_no_repeat(' ', extra_blacklist='-')
+    else:
+      text_area.insert(tkinter.INSERT, '　')
     return TK_OVERRIDE_OLD_BEHAVIOR
   if has_buffer and event.keysym == TK_KEY_BACKSPACE:
     with buffer_display_helper:
