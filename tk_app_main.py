@@ -107,6 +107,7 @@ def change_completion_page(direction: int) -> ...:
     if (new_idx := list_view.get_page_idx() + direction) < 0 or not new_idx < page_count:
       return
     list_view.set_page_idx(new_idx)
+    return TK_OVERRIDE_OLD_BEHAVIOR
   return inner
 
 def try_select_completion(idx: int):
