@@ -1,4 +1,9 @@
+import string
+
 _map: dict[str, str] = {}
+_vn_chars: set[str] = set()
+
+_vn_chars.update(string.ascii_letters)
 
 for _a, _b in ((('àáạảã', 'ăằắặẳẵ', 'âầấậẩẫ'), 'a'),
                (('đ'    ,                   ), 'd'),
@@ -10,6 +15,7 @@ for _a, _b in ((('àáạảã', 'ăằắặẳẵ', 'âầấậẩẫ'), 'a')
   for _x in _a:
     for _f in (lambda s: s, lambda s: s.upper()):
       _map.update(dict.fromkeys(_f(_x), _f(_b)))
+      _vn_chars.update(_f(_x))
 
 del _a, _b, _x, _f
 
@@ -18,3 +24,6 @@ del _map
 
 def normalize(s: str) -> str:
   return s.translate(_tl)
+
+def is_vietnamese_alphabet(s: str) -> bool:
+  return all(c in _vn_chars for c in s)

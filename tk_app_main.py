@@ -17,6 +17,7 @@ import nomkb_alpha
 import nomkb_appres
 import nomkb_dict
 import nomkb_ui_tk
+import nomkb_utils
 
 TK_COLOR_GREEN = 'green'
 TK_COLOR_RED = 'red'
@@ -37,7 +38,7 @@ class Word:
   standard_representation: str
 
   def __str__(self) -> str:
-    return f'{self.nom_representation} {self.standard_representation}'
+    return self.standard_representation if self.nom_representation == '' else f'{self.nom_representation} {self.standard_representation}'
 
 def select_all_text(event: typing.Optional[tkinter.Event] = None) -> typing.Optional[str]:
   text_area.tag_add(tkinter.SEL, TK_TEXT_START, tkinter.END)
@@ -76,7 +77,7 @@ def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
   has_buffer = buffer_size > 0
   if has_buffer and event.keysym == TK_KEY_ENTER:
     if list_view.get_page_count() == 0:
-      text_area.insert(tkinter.INSERT, buffer_display.get())
+      insert_non_nom_text(buffer_display.get())
       cleanup()
     else:
       try_select_completion(0)
@@ -85,7 +86,10 @@ def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
     if has_buffer:
       add_to_buffer_no_repeat(' ', extra_blacklist='-')
     else:
-      text_area.insert(tkinter.INSERT, '　')
+      row, col = get_cursor_pos()
+      leading_latin = col != 0 and (nomkb_alpha.is_vietnamese_alphabet(prev_char := get_char_at(row, col, True)) or prev_char == ' ')
+      following_latin = get_line_length(row) != col and (nomkb_alpha.is_vietnamese_alphabet(next_char := get_char_at(row, col)) or next_char == ' ')
+      text_area.insert(tkinter.INSERT, ' ' if leading_latin or following_latin else '　')
     return TK_OVERRIDE_OLD_BEHAVIOR
   if has_buffer and event.keysym == TK_KEY_BACKSPACE:
     with buffer_display_helper:
@@ -126,7 +130,20 @@ def try_select_completion(idx: int):
     word: Word = list_view.get_item_in_page(idx)
   except IndexError:
     return
-  text_area.insert(tkinter.INSERT, word.nom_representation)
+  if word.nom_representation == '':
+    insert_non_nom_text(word.standard_representation)
+  else:
+    # insert a space before if there's a Latin character
+    row, col = get_cursor_pos()
+    if col != 0 and nomkb_alpha.is_vietnamese_alphabet(get_char_at(row, col, True)):
+      text_area.insert(tkinter.INSERT, ' ')
+
+    text_area.insert(tkinter.INSERT, word.nom_representation)
+
+    # insert a space after if there's a Latin character
+    row, col = get_cursor_pos()
+    if get_line_length(row) != col and nomkb_alpha.is_vietnamese_alphabet(get_char_at(row, col)):
+      text_area.insert(tkinter.INSERT, ' ')
   cleanup()
 
 def cleanup():
@@ -159,6 +176,11 @@ def handle_punc(s: str) -> ...:
     if not kb_enabled:
       return
     if buffer_size == 0:
+      # if a space is before cursor, remove it
+      row, col = get_cursor_pos()
+      if col != 0 and get_char_at(row, col, True) == ' ':
+        text_area.delete(f'{row}.{col - 1}', f'{row}.{col}')
+
       text_area.insert(tkinter.INSERT, s)
     return TK_OVERRIDE_OLD_BEHAVIOR
   return inner
@@ -171,6 +193,36 @@ def handle_quotes(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]
     text_area.insert(tkinter.INSERT, '”' if in_quote else '“')
     in_quote = not in_quote
   return TK_OVERRIDE_OLD_BEHAVIOR
+
+def get_cursor_pos() -> (int, int):
+  return tuple(int(x) for x in text_area.index(tkinter.INSERT).split('.'))
+
+def get_line_length(row: int) -> int:
+  _, col = text_area.index(f'{row}.{tkinter.END}').split('.')
+  return int(col)
+
+def get_char_at(row: int, col: int, backward: bool = False) -> str:
+  if backward:
+    return text_area.get(f'{row}.{col - 1}', f'{row}.{col}')
+  else:
+    return text_area.get(f'{row}.{col}', f'{row}.{col + 1}')
+
+def insert_non_nom_text(s: str):
+  row, col = get_cursor_pos()
+  if col == 0 or get_char_at(row, col, True) in '。；！？':
+    # beginning of a sentence
+    text_area.insert(tkinter.INSERT, nomkb_utils.capitalize_1st(s))
+  else:
+    # insert a space before if there isn't one
+    if get_char_at(row, col, True) not in ' ，：（）':
+      text_area.insert(tkinter.INSERT, ' ')
+
+    text_area.insert(tkinter.INSERT, s)
+
+  # insert a space after if there isn't one
+  row, col = get_cursor_pos()
+  if get_line_length(row) == col or get_char_at(row, col) not in ' ，：（）':
+    text_area.insert(tkinter.INSERT, ' ')
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', '--dict_file', required=True, type=argparse.FileType('rb'), help='path to the dictionary file to use')
