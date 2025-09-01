@@ -75,7 +75,11 @@ def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
 
   has_buffer = buffer_size > 0
   if has_buffer and event.keysym == TK_KEY_ENTER:
-    try_select_completion(0)
+    if list_view.get_page_count() == 0:
+      text_area.insert(tkinter.INSERT, buffer_display.get())
+      cleanup()
+    else:
+      try_select_completion(0)
     return TK_OVERRIDE_OLD_BEHAVIOR
   if event.keysym == TK_KEY_SPACE:
     if has_buffer:
