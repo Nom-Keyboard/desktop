@@ -106,6 +106,8 @@ def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
     if has_buffer and event.keysym != TK_KEY_0 and event.keysym in string.digits:
       try_select_completion(int(event.keysym) - 1)
       return TK_OVERRIDE_OLD_BEHAVIOR
+  if has_buffer:
+    return TK_OVERRIDE_OLD_BEHAVIOR
 
 def change_completion_page(direction: int) -> ...:
   def inner(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
@@ -156,7 +158,8 @@ def handle_punc(s: str) -> ...:
   def inner(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
     if not kb_enabled:
       return
-    text_area.insert(tkinter.INSERT, s)
+    if buffer_size == 0:
+      text_area.insert(tkinter.INSERT, s)
     return TK_OVERRIDE_OLD_BEHAVIOR
   return inner
 
@@ -164,8 +167,9 @@ def handle_quotes(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]
   global in_quote
   if not kb_enabled:
     return
-  text_area.insert(tkinter.INSERT, '”' if in_quote else '“')
-  in_quote = not in_quote
+  if buffer_size == 0:
+    text_area.insert(tkinter.INSERT, '”' if in_quote else '“')
+    in_quote = not in_quote
   return TK_OVERRIDE_OLD_BEHAVIOR
 
 ap = argparse.ArgumentParser()
