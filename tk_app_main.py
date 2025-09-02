@@ -29,6 +29,7 @@ TK_KEY_ENTER = 'Return'
 TK_KEY_ESC = 'Escape'
 TK_KEY_HYPHEN = 'minus'
 TK_KEY_SPACE = 'space'
+TK_MODIFIER_CTRL = 1 << 2
 TK_OVERRIDE_OLD_BEHAVIOR = 'break'
 TK_TEXT_START = '1.0'
 
@@ -71,7 +72,7 @@ def toggle_kb(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
 def on_key(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
   global buffer_size
 
-  if not kb_enabled or event is None or event.type != tkinter.EventType.KeyPress:
+  if not kb_enabled or event is None or event.type != tkinter.EventType.KeyPress or event.state & TK_MODIFIER_CTRL:
     return
 
   has_buffer = buffer_size > 0
