@@ -239,6 +239,10 @@ def save_file(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
     tkinter.messagebox.showinfo(title=APP_TITLE, message='The file content is written to disk successfully.')
   return TK_OVERRIDE_OLD_BEHAVIOR
 
+def confirm_closing():
+  if tkinter.messagebox.askyesno(title=APP_TITLE, message='Exit application? If you have any unsaved changes, they will be lost forever!', default=tkinter.messagebox.NO):
+    root.destroy()
+
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', '--dict_file', required=True, type=argparse.FileType('rb'), help='path to the dictionary file to use')
 ap.add_argument('-f', '--file', type=argparse.FileType('rb+'), help='path to the plain text file to operate on')
@@ -255,6 +259,7 @@ except (csv.Error, UnicodeDecodeError, ValueError) as exc:
 
 (root := tkinter.Tk()).title(APP_TITLE)
 root.iconphoto(True, tkinter.PhotoImage(data=nomkb_appres.ICON_DATA))
+root.protocol('WM_DELETE_WINDOW', confirm_closing)
 
 (status_label := tkinter.Label(cursor=TK_CURSOR_HAND)).pack(fill=tkinter.X)
 status_label.bind('<Button-1>', toggle_kb)
