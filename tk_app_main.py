@@ -11,6 +11,7 @@ import typing
 
 import tkinter
 import tkinter.font
+import tkinter.messagebox
 import tkinter.scrolledtext
 
 import nomkb_alpha
@@ -32,6 +33,8 @@ TK_KEY_SPACE = 'space'
 TK_MODIFIER_CTRL = 1 << 2
 TK_OVERRIDE_OLD_BEHAVIOR = 'break'
 TK_TEXT_START = '1.0'
+
+APP_TITLE = 'Nôm Keyboard'
 
 @dataclasses.dataclass(frozen=True)
 class Word:
@@ -225,8 +228,20 @@ def insert_non_nom_text(s: str):
   if get_line_length(row) == col or get_char_at(row, col) not in ' ，：（）':
     text_area.insert(tkinter.INSERT, ' ')
 
+def save_file(event: typing.Optional[tkinter.Event]) -> typing.Optional[str]:
+  if args.file is None:
+    tkinter.messagebox.showerror(title=APP_TITLE, message='Application was not launched with a file to operate on, so saving will not do anything.')
+  else:
+    fd.seek(0)
+    fd.write(text_area.get(TK_TEXT_START, f'{tkinter.END}-1c'))
+    fd.flush()
+    fd.truncate()
+    tkinter.messagebox.showinfo(title=APP_TITLE, message='The file content is written to disk successfully.')
+  return TK_OVERRIDE_OLD_BEHAVIOR
+
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', '--dict_file', required=True, type=argparse.FileType('rb'), help='path to the dictionary file to use')
+ap.add_argument('-f', '--file', type=argparse.FileType('rb+'), help='path to the plain text file to operate on')
 args = ap.parse_args()
 
 reverse_lookup_table: collections.defaultdict[str, set[Word]] = collections.defaultdict(set)
@@ -238,7 +253,7 @@ except (csv.Error, UnicodeDecodeError, ValueError) as exc:
   print('Error parsing dictionary file, Bailing out.', file=sys.stderr)
   sys.exit(1)
 
-(root := tkinter.Tk()).title('Nôm Keyboard')
+(root := tkinter.Tk()).title(APP_TITLE)
 root.iconphoto(True, tkinter.PhotoImage(data=nomkb_appres.ICON_DATA))
 
 (status_label := tkinter.Label(cursor=TK_CURSOR_HAND)).pack(fill=tkinter.X)
@@ -283,6 +298,13 @@ root.minsize(root.winfo_width(), root.winfo_height())
 
 kb_enabled = False
 toggle_kb(None)
+
+root.bind_all('<Control-s>', save_file)
+
+if args.file is not None:
+  (fd := io.TextIOWrapper(args.file, encoding='utf-8')).seek(0)
+  text_area.insert(TK_TEXT_START, fd.read())
+  tkinter.messagebox.showinfo(title=APP_TITLE, message='Successfully read content from file.')
 
 buffer_size = 0
 in_quote = False
