@@ -10,8 +10,8 @@ import traceback
 import typing
 
 import tkinter
-import tkinter.scrolledtext
 import tkinter.font
+import tkinter.scrolledtext
 
 import nomkb_alpha
 import nomkb_appres
