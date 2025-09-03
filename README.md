@@ -1,3 +1,7 @@
+> [!WARNING]
+>
+> This app is under early development, while it works mostly fine, expect issues
+
 1. Install [Python](https://www.python.org/)
 2. Install [Nôm Na Tống](https://github.com/nomfoundation/font)
 3. For the rest, run in your terminal:
